@@ -22,11 +22,12 @@ def mouse_wheel(event):
 	global scale
 	# respond to Linux or Windows wheel event
 	if event.num == 5 or event.delta == -120:
-		count -= 0.08
-	if event.num == 4 or event.delta == 120:
 		count += 0.08
+	if event.num == 4 or event.delta == 120:
+		count -= 0.08
 
 	scale = 800000.0 * 10 ** count
+	print(translation, scale)
 
 def startMove(event):
 	global dragging
@@ -45,13 +46,16 @@ def drag(event):
 		translation[1] -= (event.y_root - start[1]) * scale
 		start[0] = event.x_root
 		start[1] = event.y_root
+		print(translation, scale)
 	else:
 		dragging = True
 		start[0] = event.x_root
 		start[1] = event.y_root
 
 root = tk.Tk()
+root.title("Orbital Simulator")
 canvas = turtle.ScrolledCanvas(root, 800, 800)
+root.resizable(False, False)
 canvas.pack()
 sc = turtle.TurtleScreen(canvas)
 t = turtle.RawTurtle(sc)
@@ -67,19 +71,20 @@ t.penup()
 def point(theta, r):
 	x = r * cos(radians(theta))
 	y = r * sin(radians(theta))
-	return [x, y]
+	return array([x, y])
 
 class Body:
 	#pos = km
 	#vel = km/s
 	#gravCon = G*m = km^3/s^2
-	def __init__(self, vel, pos, gravCon, color):
+	def __init__(self, vel, pos, gravCon, color, r):
 		self.vel = array(vel)
 		self.pos = array(pos)
 		self.gravCon = gravCon
 		self.color = color
 		self.storePos = []
 		self.storeIdx = 0
+		self.r = r
 
 	#deltaT = s
 	def update(self, bodyList, day, max_list_len):
@@ -91,7 +96,7 @@ class Body:
 		if(len(self.storePos) < max_list_len):
 			self.storePos.append(self.pos/10000)
 
-		self.draw(6)
+		self.draw(self.r)
 
 	def redraw(self):
 		t.color(self.color)
@@ -125,12 +130,13 @@ async def main():
 	#	print(x)
 	#	x += 1
 	#	x %= 360
-	sun = Body([0.0, 0.0], [0.0, 0.0], 132712000000.0, "yellow")
+	sun = Body([0.0, 0.0], [0.0, 0.0], 132712000000.0, "yellow", 10)
 	bodyList.append(sun)
 	#earth = Body([0.0, 29.29], [152100000.0, 0.0], 0, "blue")
-	earth = Body(point(102.9+90, 30.29), point(102.9, 147095000), 398600, "blue")
-	mars = Body(point(251.0+90, 26.5), point(251.0, 206650000), 42828, "red")
-	venus = Body(point(131.0+90, 35.26), point(131.0, 107480000), 324860, "#804020")
+	earth = Body(point(102.9+90, 30.29), point(102.9, 147095000), 398600, "blue", 6)
+	mars = Body(point(251.0+90, 26.5), point(251.0, 206650000), 42828, "red", 6)
+	venus = Body(point(131.0+90, 35.26), point(131.0, 107480000), 324860, "#804020", 6)
+	luna = Body(point(102.9+90, 30.29) + point(90, 1.082), point(102.9, 147095000) + point(0, 363300), 4902.8, "grey", 4)
 	
 	sc.bgcolor("black")
 	
@@ -142,14 +148,16 @@ async def main():
 		
 		await asyncio.sleep(0.001)
 		t.clear()
-		earth.update([sun, venus, mars], round(hr/24), 366)
+		earth.update([sun, venus, mars, luna], round(hr/24), 366)
 		earth.redraw()
-		mars.update([sun, earth, venus], round(hr/24), 687)
+		mars.update([sun, earth, venus, luna], round(hr/24), 687)
 		mars.redraw()
-		venus.update([sun, earth, mars], round(hr/24), 230)
+		venus.update([sun, earth, mars, luna], round(hr/24), 230)
 		venus.redraw()
-		sun.update([venus, earth, mars], round(hr/24), 10000)
+		sun.update([venus, earth, mars, luna], round(hr/24), 10000)
 		sun.redraw()
+		luna.update([sun, venus, mars, earth], round(hr/24), 366)
+		luna.redraw()
 		t.goto(-380, 360)
 		t.color("white")
 		style = ('Arial', 14, 'normal')
