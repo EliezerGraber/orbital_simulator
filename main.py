@@ -17,6 +17,9 @@ translation = [0, 0]
 start = [0, 0]
 dragging = False
 
+bodyList = []
+activeBody = 0
+
 def mouse_wheel(event):
 	global count
 	global scale
@@ -52,6 +55,16 @@ def drag(event):
 		start[0] = event.x_root
 		start[1] = event.y_root
 
+def switch_focus(event, up):
+	global activeBody
+	global bodyList
+	if up:
+		activeBody += 1
+		activeBody %= len(bodyList)
+	else:
+		activeBody -= 1
+		activeBody %= len(bodyList)
+
 root = tk.Tk()
 root.title("Orbital Simulator")
 canvas = turtle.ScrolledCanvas(root, 800, 800)
@@ -61,10 +74,12 @@ sc = turtle.TurtleScreen(canvas)
 t = turtle.RawTurtle(sc)
 t.speed(0)
 sc.tracer(False)
-canvas.bind("<MouseWheel>", mouse_wheel)
-canvas.bind("<B2-Motion>", drag)
+canvas.bind('<MouseWheel>', mouse_wheel)
+canvas.bind('<B2-Motion>', drag)
 canvas.bind('<ButtonPress-2>', startMove)
 canvas.bind('<ButtonRelease-2>', stopMove)
+root.bind('<Up>', lambda event, up=True: switch_focus(event, up))
+root.bind('<Down>', lambda event, up=False: switch_focus(event, up))
 t.ht()
 t.penup()
 
@@ -77,7 +92,8 @@ class Body:
 	#pos = km
 	#vel = km/s
 	#gravCon = G*m = km^3/s^2
-	def __init__(self, vel, pos, gravCon, color, r):
+	def __init__(self, name, vel, pos, gravCon, color, r):
+		self.name = name
 		self.vel = array(vel)
 		self.pos = array(pos)
 		self.gravCon = gravCon
@@ -116,10 +132,14 @@ class Body:
 		t.penup()
 		#turtle.update()
 
+	def getPos(self):
+		return self.pos + 0
+
 async def main():
 	
 	hr = 0
-	bodyList = []
+	activeBodyLastPos = array([0,0])
+	global translation
 	#for theta in range(0, 360):
 	#	graph.update(theta, 0.5)
 	#x = 0
@@ -130,14 +150,19 @@ async def main():
 	#	print(x)
 	#	x += 1
 	#	x %= 360
-	sun = Body([0.0, 0.0], [0.0, 0.0], 132712000000.0, "yellow", 10)
-	bodyList.append(sun)
+	sun = Body("Sun", [0.0, 0.0], [0.0, 0.0], 132712000000.0, "yellow", 10)
 	#earth = Body([0.0, 29.29], [152100000.0, 0.0], 0, "blue")
-	earth = Body(point(102.9+90, 30.29), point(102.9, 147095000), 398600, "blue", 6)
-	mars = Body(point(251.0+90, 26.5), point(251.0, 206650000), 42828, "red", 6)
-	venus = Body(point(131.0+90, 35.26), point(131.0, 107480000), 324860, "#804020", 6)
-	luna = Body(point(102.9+90, 30.29) + point(90, 1.082), point(102.9, 147095000) + point(0, 363300), 4902.8, "grey", 4)
+	earth = Body("Earth", point(102.9+90, 30.29), point(102.9, 147095000), 398600, "blue", 6)
+	mars = Body("Mars", point(251.0+90, 26.5), point(251.0, 206650000), 42828, "red", 6)
+	venus = Body("Venus", point(131.0+90, 35.26), point(131.0, 107480000), 324860, "#804020", 6)
+	luna = Body("Luna", point(102.9+90, 30.29) + point(90, 1.082), point(102.9, 147095000) + point(0, 363300), 4902.8, "grey", 4)
 	
+	bodyList.append(sun)
+	bodyList.append(earth)
+	bodyList.append(mars)
+	bodyList.append(venus)
+	bodyList.append(luna)
+
 	sc.bgcolor("black")
 	
 	while True:
@@ -164,8 +189,14 @@ async def main():
 		t.write(f'Day: {round(hr/24,2)}', font=style)
 		t.goto(-380, 330)
 		t.write(f'Scale: {round(scale)} km/px', font=style)
+		t.goto(-380, 300)
+		t.write(f'Body: {bodyList[activeBody].name}', font=style)
 		sc.update()
 		
+		translation -= bodyList[activeBody].pos - activeBodyLastPos
+		activeBodyLastPos = bodyList[activeBody].getPos()
+
+
 		if keyboard.is_pressed("Esc"):
 			break
 
