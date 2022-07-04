@@ -1,5 +1,6 @@
 import tkinter as tk
 import turtle
+from numpy import array
 
 class UI():
 	start = [0, 0]
@@ -9,6 +10,7 @@ class UI():
 	scale = 800000.0
 	translation = [0, 0]
 	body_num = 0
+	activeBodyLastPos = array([0,0])
 
 	def __init__(self):
 		self.root = tk.Tk()
@@ -81,4 +83,3 @@ class UI():
 		self.t.circle(body.r)
 		self.t.end_fill()
 		self.t.penup()
-		#turtle.update()

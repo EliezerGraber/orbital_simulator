@@ -15,12 +15,12 @@ class Body:
 		self.r = r
 
 	#deltaT = s
-	def update(self, bodyList, day, max_list_len):
+	def update(self, bodyList, max_list_len):
 		self.pos += self.vel * 60 * 60 * 24
 		for body in bodyList:
 			direction = (body.pos - self.pos)/numpy.linalg.norm(self.pos - body.pos)
 			self.vel += 60 * 60 * 24 * direction * body.grav_con/((numpy.linalg.norm(self.pos - body.pos))*(numpy.linalg.norm(self.pos - body.pos)))
-		self.storeDay = day
+
 		if(len(self.stored_pos) < max_list_len):
 			self.stored_pos.append(self.pos/10000)
 
