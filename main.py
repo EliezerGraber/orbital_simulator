@@ -12,20 +12,43 @@ import tkinter as tk
 #t = turtle.Turtle()
 count = 0.0
 scale = 800000.0
+translation = [0, 0]
+
+start = [0, 0]
+dragging = False
 
 def mouse_wheel(event):
 	global count
 	global scale
 	# respond to Linux or Windows wheel event
 	if event.num == 5 or event.delta == -120:
-		count -= 0.05
+		count -= 0.08
 	if event.num == 4 or event.delta == 120:
-		count += 0.05
+		count += 0.08
 
 	scale = 800000.0 * 10 ** count
 
+def startMove(event):
+	global dragging
+	dragging = True
+	start[0] = event.x_root
+	start[1] = event.y_root
+
+def stopMove(event):
+	global dragging
+	dragging = False
+
 def drag(event):
-	print(event)
+	global dragging
+	if dragging:
+		translation[0] += (event.x_root - start[0]) * scale
+		translation[1] -= (event.y_root - start[1]) * scale
+		start[0] = event.x_root
+		start[1] = event.y_root
+	else:
+		dragging = True
+		start[0] = event.x_root
+		start[1] = event.y_root
 
 root = tk.Tk()
 canvas = turtle.ScrolledCanvas(root, 800, 800)
@@ -36,6 +59,8 @@ t.speed(0)
 sc.tracer(False)
 canvas.bind("<MouseWheel>", mouse_wheel)
 canvas.bind("<B2-Motion>", drag)
+canvas.bind('<ButtonPress-2>', startMove)
+canvas.bind('<ButtonRelease-2>', stopMove)
 t.ht()
 t.penup()
 
@@ -43,33 +68,6 @@ def point(theta, r):
 	x = r * cos(radians(theta))
 	y = r * sin(radians(theta))
 	return [x, y]
-
-class Graph:
-	def __init__(self):
-		#sc.setup(800, 800)
-		#t.ht()
-		#turtle.delay(0)
-		#t.penup()
-		#sc.tracer(0, 0)
-		
-		self.theta = 0
-		self.rList = [0] * 360
-		
-	async def draw(self):
-		while True:
-			t.goto(point(self.theta, self.rList[self.theta]*self.scale))
-			t.pendown()
-			self.theta += 1
-			if self.theta == 360:
-				self.theta = 0
-				t.update()
-				await asyncio.sleep(0.001)
-				t.clear()
-
-	#theta should be in range [0, 360]
-	#r should be in range [0, 1]
-	def update(self, theta, r):
-		self.rList[theta] = r
 
 class Body:
 	#pos = km
@@ -85,16 +83,10 @@ class Body:
 
 	#deltaT = s
 	def update(self, bodyList, day, max_list_len):
-		#turtle.color(self.color)
-		#turtle.goto(self.pos/1000000)
-		#turtle.pendown()
 		self.pos += self.vel * 60 * 60 * 24
 		for body in bodyList:
 			direction = (body.pos - self.pos)/numpy.linalg.norm(self.pos - body.pos)
 			self.vel += 60 * 60 * 24 * direction * body.gravCon/((numpy.linalg.norm(self.pos - body.pos))*(numpy.linalg.norm(self.pos - body.pos)))
-		#turtle.goto(self.pos/1000000)
-		#turtle.penup()
-		#turtle.update()
 		self.storeDay = day
 		if(len(self.storePos) < max_list_len):
 			self.storePos.append(self.pos/10000)
@@ -104,13 +96,13 @@ class Body:
 	def redraw(self):
 		t.color(self.color)
 		for pos in self.storePos:
-			t.goto( round(pos[0]*10000/scale), round(pos[1]*10000/scale))
+			t.goto( round((pos[0]*10000 + translation[0])/scale), round((pos[1]*10000 + translation[1])/scale))
 			t.pendown()
 		t.penup()
 		#turtle.update()
 
 	def draw(self, r):
-		t.goto(self.pos[0]/scale, self.pos[1]/scale-r)
+		t.goto((self.pos[0] + translation[0])/scale, (self.pos[1] + translation[1])/scale-r)
 		t.pendown()
 		t.color(self.color)
 		t.begin_fill()
@@ -122,7 +114,6 @@ class Body:
 async def main():
 	
 	hr = 0
-	graph = Graph()
 	bodyList = []
 	#for theta in range(0, 360):
 	#	graph.update(theta, 0.5)
@@ -149,15 +140,6 @@ async def main():
 		#if(hr%48 == 0):
 		#	print("Dis:", round(numpy.linalg.norm(earth.pos)/(1000000), 2), "Vel:", round(numpy.linalg.norm(earth.vel), 2), "Day:", hr/24)
 		
-		#turtle.goto(-400, 400)
-		#turtle.fillcolor("black")
-		#turtle.begin_fill()
-		#for i in range(2):
-		#    turtle.forward(400)
-		#    turtle.right(90)
-		#    turtle.forward(500)
-		#    turtle.right(90)
-		#turtle.end_fill()
 		await asyncio.sleep(0.001)
 		t.clear()
 		earth.update([sun, venus, mars], round(hr/24), 366)
