@@ -7,155 +7,30 @@ import numpy
 import keyboard
 import time
 import tkinter as tk
-
-#sc = turtle.Screen()
-#t = turtle.Turtle()
-count = 0.0
-scale = 800000.0
-translation = [0, 0]
-
-start = [0, 0]
-dragging = False
+import datetime
+from ui import UI
+from body import Body
 
 bodyList = []
-activeBody = 0
-
-def mouse_wheel(event):
-	global count
-	global scale
-	# respond to Linux or Windows wheel event
-	if event.num == 5 or event.delta == -120:
-		count += 0.08
-	if event.num == 4 or event.delta == 120:
-		count -= 0.08
-
-	scale = 800000.0 * 10 ** count
-	print(translation, scale)
-
-def startMove(event):
-	global dragging
-	dragging = True
-	start[0] = event.x_root
-	start[1] = event.y_root
-
-def stopMove(event):
-	global dragging
-	dragging = False
-
-def drag(event):
-	global dragging
-	if dragging:
-		translation[0] += (event.x_root - start[0]) * scale
-		translation[1] -= (event.y_root - start[1]) * scale
-		start[0] = event.x_root
-		start[1] = event.y_root
-		print(translation, scale)
-	else:
-		dragging = True
-		start[0] = event.x_root
-		start[1] = event.y_root
-
-def switch_focus(event, up):
-	global activeBody
-	global bodyList
-	if up:
-		activeBody += 1
-		activeBody %= len(bodyList)
-	else:
-		activeBody -= 1
-		activeBody %= len(bodyList)
-
-root = tk.Tk()
-root.title("Orbital Simulator")
-canvas = turtle.ScrolledCanvas(root, 800, 800)
-root.resizable(False, False)
-canvas.pack()
-sc = turtle.TurtleScreen(canvas)
-t = turtle.RawTurtle(sc)
-t.speed(0)
-sc.tracer(False)
-canvas.bind('<MouseWheel>', mouse_wheel)
-canvas.bind('<B2-Motion>', drag)
-canvas.bind('<ButtonPress-2>', startMove)
-canvas.bind('<ButtonRelease-2>', stopMove)
-root.bind('<Up>', lambda event, up=True: switch_focus(event, up))
-root.bind('<Down>', lambda event, up=False: switch_focus(event, up))
-t.ht()
-t.penup()
 
 def point(theta, r):
 	x = r * cos(radians(theta))
 	y = r * sin(radians(theta))
 	return array([x, y])
 
-class Body:
-	#pos = km
-	#vel = km/s
-	#gravCon = G*m = km^3/s^2
-	def __init__(self, name, vel, pos, gravCon, color, r):
-		self.name = name
-		self.vel = array(vel)
-		self.pos = array(pos)
-		self.gravCon = gravCon
-		self.color = color
-		self.storePos = []
-		self.storeIdx = 0
-		self.r = r
-
-	#deltaT = s
-	def update(self, bodyList, day, max_list_len):
-		self.pos += self.vel * 60 * 60 * 24
-		for body in bodyList:
-			direction = (body.pos - self.pos)/numpy.linalg.norm(self.pos - body.pos)
-			self.vel += 60 * 60 * 24 * direction * body.gravCon/((numpy.linalg.norm(self.pos - body.pos))*(numpy.linalg.norm(self.pos - body.pos)))
-		self.storeDay = day
-		if(len(self.storePos) < max_list_len):
-			self.storePos.append(self.pos/10000)
-
-		self.draw(self.r)
-
-	def redraw(self):
-		t.color(self.color)
-		for pos in self.storePos:
-			t.goto( round((pos[0]*10000 + translation[0])/scale), round((pos[1]*10000 + translation[1])/scale))
-			t.pendown()
-		t.penup()
-		#turtle.update()
-
-	def draw(self, r):
-		t.goto((self.pos[0] + translation[0])/scale, (self.pos[1] + translation[1])/scale-r)
-		t.pendown()
-		t.color(self.color)
-		t.begin_fill()
-		t.circle(r)
-		t.end_fill()
-		t.penup()
-		#turtle.update()
-
-	def getPos(self):
-		return self.pos + 0
+ui = UI()
 
 async def main():
 	
 	hr = 0
 	activeBodyLastPos = array([0,0])
-	global translation
-	#for theta in range(0, 360):
-	#	graph.update(theta, 0.5)
-	#x = 0
-	#draw_task = asyncio.create_task(graph.draw())
-	#while True:
-	#	graph.update(x, random.randint(0, 50)/100.0 + 0.5)
-	#	await asyncio.sleep(0.01)
-	#	print(x)
-	#	x += 1
-	#	x %= 360
+	date = datetime.datetime(2022, 1, 4, 0, 0)
 	sun = Body("Sun", [0.0, 0.0], [0.0, 0.0], 132712000000.0, "yellow", 10)
 	#earth = Body([0.0, 29.29], [152100000.0, 0.0], 0, "blue")
 	earth = Body("Earth", point(102.9+90, 30.29), point(102.9, 147095000), 398600, "blue", 6)
 	mars = Body("Mars", point(251.0+90, 26.5), point(251.0, 206650000), 42828, "red", 6)
 	venus = Body("Venus", point(131.0+90, 35.26), point(131.0, 107480000), 324860, "#804020", 6)
-	luna = Body("Luna", point(102.9+90, 30.29) + point(90, 1.082), point(102.9, 147095000) + point(0, 363300), 4902.8, "grey", 4)
+	luna = Body("Luna", point(102.9+90, 30.29) + point(180, 1.082), point(102.9, 147095000) + point(90, 363300), 4902.8, "grey", 4)
 	
 	bodyList.append(sun)
 	bodyList.append(earth)
@@ -163,39 +38,42 @@ async def main():
 	bodyList.append(venus)
 	bodyList.append(luna)
 
-	sc.bgcolor("black")
+	ui.add_body()
+	ui.add_body()
+	ui.add_body()
+	ui.add_body()
+	ui.add_body()
+
+	ui.sc.bgcolor("black")
 	
 	while True:
-		#time.sleep(0.002)
-		hr += 24
-		#if(hr%48 == 0):
-		#	print("Dis:", round(numpy.linalg.norm(earth.pos)/(1000000), 2), "Vel:", round(numpy.linalg.norm(earth.vel), 2), "Day:", hr/24)
-		
 		await asyncio.sleep(0.001)
-		t.clear()
-		earth.update([sun, venus, mars, luna], round(hr/24), 366)
-		earth.redraw()
-		mars.update([sun, earth, venus, luna], round(hr/24), 687)
-		mars.redraw()
-		venus.update([sun, earth, mars, luna], round(hr/24), 230)
-		venus.redraw()
-		sun.update([venus, earth, mars, luna], round(hr/24), 10000)
-		sun.redraw()
-		luna.update([sun, venus, mars, earth], round(hr/24), 366)
-		luna.redraw()
-		t.goto(-380, 360)
-		t.color("white")
+		ui.t.clear()
+		if not keyboard.is_pressed(" "):
+			hr += 24
+			date += datetime.timedelta(days=1)
+			earth.update([sun, venus, mars, luna], round(hr/24), 366)
+			mars.update([sun, earth, venus, luna], round(hr/24), 687)
+			venus.update([sun, earth, mars, luna], round(hr/24), 230)
+			sun.update([venus, earth, mars, luna], round(hr/24), 10000)
+			luna.update([sun, venus, mars, earth], round(hr/24), 366)
+		ui.draw_body(earth)
+		ui.draw_body(mars)
+		ui.draw_body(venus)
+		ui.draw_body(sun)
+		ui.draw_body(luna)
+		ui.t.goto(-380, 360)
+		ui.t.color("white")
 		style = ('Arial', 14, 'normal')
-		t.write(f'Day: {round(hr/24,2)}', font=style)
-		t.goto(-380, 330)
-		t.write(f'Scale: {round(scale)} km/px', font=style)
-		t.goto(-380, 300)
-		t.write(f'Body: {bodyList[activeBody].name}', font=style)
-		sc.update()
+		ui.t.write(f'Date: {date.strftime("%Y/%m/%d")}', font=style)
+		ui.t.goto(-380, 330)
+		ui.t.write(f'Scale: {round(ui.scale)} km/px', font=style)
+		ui.t.goto(-380, 300)
+		ui.t.write(f'Body: {bodyList[ui.activeBody].name}', font=style)
+		ui.sc.update()
 		
-		translation -= bodyList[activeBody].pos - activeBodyLastPos
-		activeBodyLastPos = bodyList[activeBody].getPos()
-
+		ui.translation -= bodyList[ui.activeBody].pos - activeBodyLastPos
+		activeBodyLastPos = bodyList[ui.activeBody].getPos()
 
 		if keyboard.is_pressed("Esc"):
 			break
