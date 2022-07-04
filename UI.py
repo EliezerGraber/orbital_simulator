@@ -5,12 +5,13 @@ from numpy import array
 class UI():
 	start = [0, 0]
 	dragging = False
-	activeBody = 0
+	active_body = 0
 	wheel_count = 0.0
 	scale = 800000.0
 	translation = [0, 0]
 	body_num = 0
 	activeBodyLastPos = array([0,0])
+	style = ('Arial', 14, 'normal')
 
 	def __init__(self):
 		self.root = tk.Tk()
@@ -61,11 +62,11 @@ class UI():
 
 	def switch_focus(self, event, up):
 		if up:
-			self.activeBody += 1
-			self.activeBody %= self.body_num
+			self.active_body += 1
+			self.active_body %= self.body_num
 		else:
-			self.activeBody -= 1
-			self.activeBody %= self.body_num
+			self.active_body -= 1
+			self.active_body %= self.body_num
 
 	def add_body(self):
 		self.body_num += 1
@@ -83,3 +84,17 @@ class UI():
 		self.t.circle(body.r)
 		self.t.end_fill()
 		self.t.penup()
+
+	def update(self, active_body, date):
+		self.t.goto(-380, 360)
+		self.t.color("white")
+		self.t.write(f'Date: {date.strftime("%Y/%m/%d")}', font=self.style)
+		self.t.goto(-380, 330)
+		self.t.write(f'Scale: {round(self.scale)} km/px', font=self.style)
+		self.t.goto(-380, 300)
+		self.t.write(f'Body: {active_body.name}', font=self.style)
+
+		self.sc.update()
+		
+		self.translation -= active_body.getPos() - self.activeBodyLastPos
+		self.activeBodyLastPos = active_body.getPos()
