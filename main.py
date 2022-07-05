@@ -36,27 +36,27 @@ async def main():
 		name = "Earth",
 		vel = point(102.9+90, 30.29),
 		pos = point(102.9, 147095000),
-		grav_con = 398600,
+		grav_con = 398600.0,
 		color = "blue",
 		r = 6,
-		max_rendered_ticks = 366)
+		max_rendered_ticks = 367)
 
 	while(date < datetime.datetime(2022, 1, 23, 0, 0)):
 		date += datetime.timedelta(hours=24)
-		body_manager.update_bodies(144, 10)
+		body_manager.update_bodies(144, 600)
 		
 	body_manager.add_body(
 		name = "Venus",
 		vel = point(131.0+90, 35.26),
 		pos = point(131.0, 107480000),
-		grav_con = 324860,
+		grav_con = 324860.0,
 		color = "#804020",
 		r = 6,
 		max_rendered_ticks = 230)
 
 	while(date < datetime.datetime(2022, 2, 3, 0, 0)):
 		date += datetime.timedelta(hours=24)
-		body_manager.update_bodies(144, 10)
+		body_manager.update_bodies(144, 600)
 
 	body_manager.add_body(
 		name = "Luna",
@@ -78,22 +78,20 @@ async def main():
 
 	while(date < datetime.datetime(2022, 6, 21, 0, 0)):
 		date += datetime.timedelta(hours=24)
-		body_manager.update_bodies(144, 10)
+		body_manager.update_bodies(144, 600)
 
 	body_manager.add_body(
 		name = "Mars",
 		vel = point(336.0+90, 26.5),
 		pos = point(336.0, 206650000),
-		grav_con = 42828,
+		grav_con = 42828.0,
 		color = "red",
 		r = 6,
 		max_rendered_ticks = 687)
 
-	while(date < datetime.datetime(2022, 8, 1, 0, 0)):
+	while(date < datetime.datetime(2022, 7, 1, 0, 0)):
 		date += datetime.timedelta(hours=24)
-		body_manager.update_bodies(144, 10)
-
-	
+		body_manager.update_bodies(144, 600)
 
 	while True:
 		#await asyncio.sleep(0.001)
@@ -103,7 +101,7 @@ async def main():
 		if keyboard.is_pressed(" "):
 			start = time.time()
 			date += datetime.timedelta(hours=24)
-			body_manager.update_bodies(144, 10)
+			body_manager.update_bodies(144, 600)
 			end = time.time()
 			print(f"Time to complete a: {round(end - start, 4)}")
 

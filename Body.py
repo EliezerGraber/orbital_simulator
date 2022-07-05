@@ -1,5 +1,6 @@
 from numpy import array
 import math
+import numpy as np
 
 class Body:
 	#pos = km
@@ -16,12 +17,12 @@ class Body:
 		self.max_rendered_ticks = max_rendered_ticks
 
 	#deltaT = s
-	def update(self, bodyList, min_per_tick):
-		self.pos += self.vel * 60 * min_per_tick
+	def update(self, bodyList, sec_per_tick):
+		self.pos += self.vel * sec_per_tick
 		for body in bodyList:
-			vec = (body.pos - self.pos)
+			vec = body.pos - self.pos
 			dist = math.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-			self.vel += 60 * min_per_tick * vec/dist * body.grav_con/(dist * dist)
+			self.vel += sec_per_tick * vec * body.grav_con/(dist * dist * dist)
 		return self.name
 
 	def store_update(self):

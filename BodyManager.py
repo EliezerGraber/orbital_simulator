@@ -12,9 +12,9 @@ class BodyManager(object):
 		self.ui.add_body()
 		self.body_order.append(name)
 
-	def update_bodies(self, iterations, min_per_tick):
-		for tick in range(0, iterations):
-			names = [body.update([b for n, b in self.body_list.items() if n is not name and b.grav_con > 0], min_per_tick) for name, body in self.body_list.items()]
+	def update_bodies(self, iterations, sec_per_tick):
+		for tick in range(iterations):
+			names = [body.update([b for n, b in self.body_list.items() if n is not name and b.grav_con > 0], sec_per_tick) for name, body in self.body_list.items()]
 
 		for name, body in self.body_list.items():
 			body.store_update()

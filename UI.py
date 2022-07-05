@@ -73,14 +73,18 @@ class UI():
 
 	def draw_body(self, body):
 		self.t.color(body.color)
+		last_pos = []
 		if len(body.stored_pos) > 0:
 			self.t.goto(round((body.stored_pos[0][0]*10000 + self.translation[0])/self.scale), round((body.stored_pos[0][1]*10000 + self.translation[1])/self.scale))
+			last_pos = body.stored_pos[0]
 		self.t.pendown()
 		#on_screen = [p for p in body.stored_pos if abs((p[0]+ self.translation[0])/self.scale) < 1000 and abs((p[1]+ self.translation[0])/self.scale) < 1000]
 		for p in body.stored_pos:
-			self.t.goto(round((p[0]*10000 + self.translation[0])/self.scale), round((p[1]*10000 + self.translation[1])/self.scale))
+			if round((p[0]*10000 + self.translation[0])/self.scale) - round((last_pos[0]*10000 + self.translation[0])/self.scale) != 0 or round((p[1]*10000 + self.translation[1])/self.scale) - round((last_pos[1]*10000 + self.translation[1])/self.scale) != 0:
+				self.t.goto(round((p[0]*10000 + self.translation[0])/self.scale), round((p[1]*10000 + self.translation[1])/self.scale))
+				last_pos = p
 		self.t.penup()
-		self.t.goto((body.pos[0] + self.translation[0])/self.scale, (body.pos[1] + self.translation[1])/self.scale-body.r)
+		self.t.goto((body.pos[0] + self.translation[0])/self.scale, (body.pos[1] + self.translation[1])/self.scale - body.r)
 		self.t.pendown()
 		self.t.color(body.color)
 		self.t.begin_fill()
