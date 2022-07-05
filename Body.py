@@ -1,5 +1,5 @@
 from numpy import array
-import numpy
+import math
 
 class Body:
 	#pos = km
@@ -16,12 +16,15 @@ class Body:
 		self.max_rendered_ticks = max_rendered_ticks
 
 	#deltaT = s
-	def update(self, bodyList):
-		self.pos += self.vel * 60 * 60 * 24
+	def update(self, bodyList, min_per_tick):
+		self.pos += self.vel * 60 * min_per_tick
 		for body in bodyList:
-			direction = (body.pos - self.pos)/numpy.linalg.norm(self.pos - body.pos)
-			self.vel += 60 * 60 * 24 * direction * body.grav_con/((numpy.linalg.norm(self.pos - body.pos))*(numpy.linalg.norm(self.pos - body.pos)))
+			vec = (body.pos - self.pos)
+			dist = math.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
+			self.vel += 60 * min_per_tick * vec/dist * body.grav_con/(dist * dist)
+		return self.name
 
+	def store_update(self):
 		if(len(self.stored_pos) < self.max_rendered_ticks):
 			self.stored_pos.append(self.pos/10000)
 

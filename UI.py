@@ -73,9 +73,12 @@ class UI():
 
 	def draw_body(self, body):
 		self.t.color(body.color)
+		if len(body.stored_pos) > 0:
+			self.t.goto(round((body.stored_pos[0][0]*10000 + self.translation[0])/self.scale), round((body.stored_pos[0][1]*10000 + self.translation[1])/self.scale))
+		self.t.pendown()
+		#on_screen = [p for p in body.stored_pos if abs((p[0]+ self.translation[0])/self.scale) < 1000 and abs((p[1]+ self.translation[0])/self.scale) < 1000]
 		for p in body.stored_pos:
-			self.t.goto( round((p[0]*10000 + self.translation[0])/self.scale), round((p[1]*10000 + self.translation[1])/self.scale))
-			self.t.pendown()
+			self.t.goto(round((p[0]*10000 + self.translation[0])/self.scale), round((p[1]*10000 + self.translation[1])/self.scale))
 		self.t.penup()
 		self.t.goto((body.pos[0] + self.translation[0])/self.scale, (body.pos[1] + self.translation[1])/self.scale-body.r)
 		self.t.pendown()
@@ -86,6 +89,9 @@ class UI():
 		self.t.penup()
 
 	def update(self, active_body, date):
+		self.translation -= active_body.get_pos() - self.activeBodyLastPos
+		self.activeBodyLastPos = active_body.get_pos()
+
 		self.t.goto(-380, 360)
 		self.t.color("white")
 		self.t.write(f'Date: {date.strftime("%Y/%m/%d")}', font=self.style)
@@ -95,6 +101,3 @@ class UI():
 		self.t.write(f'Body: {active_body.name}', font=self.style)
 
 		self.sc.update()
-		
-		self.translation -= active_body.get_pos() - self.activeBodyLastPos
-		self.activeBodyLastPos = active_body.get_pos()
