@@ -25,5 +25,8 @@ class Body:
 		if(len(self.stored_pos) < self.max_rendered_ticks):
 			self.stored_pos.append(self.pos/10000)
 
-	def getPos(self):
+	def get_pos(self):
 		return array(self.pos)
+
+	def get_vel(self):
+		return array(self.vel)

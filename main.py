@@ -40,15 +40,10 @@ async def main():
 		r = 6,
 		max_rendered_ticks = 366)
 
-	body_manager.add_body(
-		name = "Mars",
-		vel = point(251.0+90, 26.5),
-		pos = point(251.0, 206650000),
-		grav_con = 42828,
-		color = "red",
-		r = 6,
-		max_rendered_ticks = 687)
-
+	while(date < datetime.datetime(2022, 1, 23, 0, 0)):
+		date += datetime.timedelta(days=1)
+		body_manager.update_bodies()
+		
 	body_manager.add_body(
 		name = "Venus",
 		vel = point(131.0+90, 35.26),
@@ -58,14 +53,31 @@ async def main():
 		r = 6,
 		max_rendered_ticks = 230)
 
+	while(date < datetime.datetime(2022, 2, 3, 0, 0)):
+		date += datetime.timedelta(days=1)
+		body_manager.update_bodies()
+
 	body_manager.add_body(
 		name = "Luna",
-		vel = point(102.9+90, 30.29) + point(180, 1.082),
-		pos = point(102.9, 147095000) + point(90, 363300),
+		vel = body_manager.body_list["Earth"].get_vel() + point(180, 1.082),
+		pos = body_manager.body_list["Earth"].get_pos() + point(90, 363300),
 		grav_con = 4902.8,
 		color = "grey",
 		r = 4,
 		max_rendered_ticks = 366)
+
+	while(date < datetime.datetime(2022, 6, 21, 0, 0)):
+		date += datetime.timedelta(days=1)
+		body_manager.update_bodies()
+
+	body_manager.add_body(
+		name = "Mars",
+		vel = point(251.0+90, 26.5),
+		pos = point(251.0, 206650000),
+		grav_con = 42828,
+		color = "red",
+		r = 6,
+		max_rendered_ticks = 687)
 
 	while True:
 		await asyncio.sleep(0.001)

@@ -96,5 +96,5 @@ class UI():
 
 		self.sc.update()
 		
-		self.translation -= active_body.getPos() - self.activeBodyLastPos
-		self.activeBodyLastPos = active_body.getPos()
+		self.translation -= active_body.get_pos() - self.activeBodyLastPos
+		self.activeBodyLastPos = active_body.get_pos()
