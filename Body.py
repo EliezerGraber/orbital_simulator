@@ -1,8 +1,11 @@
 from numpy import array
-import math
+from math import sqrt
 import numpy as np
+from Util import *
 
 class Body:
+	__slots__ = ("name", "vel", "pos", "grav_con", "color", "stored_pos", "r", "max_rendered_ticks")
+
 	#pos = km
 	#vel = km/s
 	#grav_con = G*m = km^3/s^2
@@ -19,11 +22,19 @@ class Body:
 	#deltaT = s
 	def update(self, bodyList, sec_per_tick):
 		self.pos += self.vel * sec_per_tick
+		px = self.pos[0]
+		py = self.pos[1]
+		dvx = 0
+		dvy = 0
 		for body in bodyList:
-			vec = body.pos - self.pos
-			dist = math.sqrt(vec[0] * vec[0] + vec[1] * vec[1])
-			self.vel += sec_per_tick * vec * body.grav_con/(dist * dist * dist)
-		return self.name
+			if body.grav_con and body is not self:
+				vecx = body.pos[0] - px
+				vecy = body.pos[1] - py
+				dist = sqrt(vecx * vecx + vecy* vecy)
+				k = sec_per_tick * body.grav_con/(dist * dist * dist)
+				dvx += k * vecx
+				dvy += k * vecy
+		self.vel += [dvx, dvy]
 
 	def store_update(self):
 		if(len(self.stored_pos) < self.max_rendered_ticks):
@@ -34,3 +45,7 @@ class Body:
 
 	def get_vel(self):
 		return array(self.vel)
+
+	def add_vel(self, vel, date):
+		self.vel += vel
+		print(f'Thrusted for deltaV of {get_len(vel)} km/s heading {get_angle(vel)} degrees at {date.strftime("%Y/%m/%d %H:%M")}')
